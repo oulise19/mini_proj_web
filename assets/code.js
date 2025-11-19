@@ -32,6 +32,14 @@ const app = Vue.createApp({
           iconAnchor: [17, 35]
         });
 
+        const collierIcon = L.icon({
+          iconUrl: "assets/collier_marie-amelie.png",
+          iconSize: [40, 40],
+          iconAnchor: [17, 35]
+        });
+
+
+
         fetch('/api/objets') 
         .then(res => res.json()) 
         .then(objets => { 
@@ -39,6 +47,7 @@ const app = Vue.createApp({
           objets.forEach(o => { 
             let icon = null; 
             if (o.icon === "couronne.png") icon = crownIcon; 
+            if (o.icon === "marteau.png") icon = hammerIcon; 
             if (o.icon === "marteau.png") icon = hammerIcon; 
             
              const marker = L.marker([parseFloat(o.lat), parseFloat(o.lon)], icon ? { icon } : {}) 
@@ -92,10 +101,14 @@ const app = Vue.createApp({
                 } 
                   
                   else { alert(objet.indice || "Cet objet semble verrouillé..."); 
+
+    
                    
                   } 
                 } 
-              } 
+              }
+              else if (objet.type === 'bloque_code') {
+              }  
             } 
           } 
         });

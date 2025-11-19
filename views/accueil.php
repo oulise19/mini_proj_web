@@ -9,9 +9,17 @@ error_reporting(E_ALL);
   <meta charset="utf-8" />
   <title>Vol du Louvre</title>
 
-  <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
-  <script src="https://unpkg.com/vue@3"></script>
-  <script src="https://unpkg.com/leaflet"></script>
+  <!-- Leaflet CSS from CDN -->
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+        integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY="
+        crossorigin=""/>
+  
+  <!-- Leaflet JS from CDN -->
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+          integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo="
+          crossorigin=""></script>
+
+  <!-- Your custom CSS -->
   <link rel="stylesheet" href="assets/style.css">
 
 </head>
@@ -20,8 +28,8 @@ error_reporting(E_ALL);
 
 <div id="app">  
 
-  <!-- ÉCRAN D’INTRO -->
-  <div v-if="showIntro" class="intro-screen">
+  <!-- ÉCRAN D'INTRO -->
+<!--  <div v-if="showIntro" class="intro-screen">
     <div class="intro-box">
       <h1>Vol du Louvre</h1>
       <p>
@@ -34,25 +42,28 @@ error_reporting(E_ALL);
       <button @click="startGame">Commencer</button>
     </div>
   </div>
+-->
 
   <!-- LE JEU -->
-  <div v-else>
+  <!--<div v-else>  -->
     <h1>Trouve les objets volés du Louvre !</h1>
 
-    <div id="map"></div>
-
+     
     <div id="inventaire">
       <h3>Inventaire :</h3>
       <ul>
         <li v-for="item in inventaire">{{ item.nom }}</li>
       </ul>
     </div>
-  </div>
+  <!-- </div>  -->
 
 </div>
 
-<script src="https://cdn.jsdelivr.net/npm/vue"></script>
-    <script src="assets/code.js"></script>
+ <div id="map"></div>
+
+
+<script src="https://cdn.jsdelivr.net/npm/vue@3"></script>
+<script src="assets/code2.js"></script>
 
 </body>
 </html>
