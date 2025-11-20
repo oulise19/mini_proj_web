@@ -1,0 +1,53 @@
+services:
+  web:
+    build:
+      context: ./apache-php
+    container_name: web
+    ports:
+      - "1234:80"
+    volumes:
+      - ./apache-php/src:/var/www/html
+
+  db:
+    image: postgis/postgis:15-3.3
+    container_name: db
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: mydb
+    ports:
+      - "5432:5432"
+    volumes:
+      - pg_data:/var/lib/postgresql/data
+      - ./db:/docker-entrypoint-initdb.d
+    restart: always
+
+
+  pgadmin:
+    image: dpage/pgadmin4:latest
+    container_name: pgadmin
+    environment:
+      PGADMIN_DEFAULT_EMAIL: admin@admin.com
+      PGADMIN_DEFAULT_PASSWORD: admin
+    ports:
+      - "5050:80"
+    volumes:
+      - pgadmin_data:/var/lib/pgadmin
+    restart: always
+
+  geoserver:
+    image: kartoza/geoserver:2.25.1
+    container_name: geoserver
+    environment:
+      GEOSERVER_ADMIN_USER: admin
+      GEOSERVER_ADMIN_PASSWORD: geoserver
+    ports:
+      - "8080:8080"
+    volumes:
+      - geoserver_data:/opt/geoserver/data_dir
+    restart: always
+
+volumes:
+  pg_data:
+  pgadmin_data:
+  geoserver_data:
