@@ -52,7 +52,7 @@ error_reporting(E_ALL);
     <div id="inventaire">
       <h3>Inventaire :</h3>
       <ul>
-        <li v-for="item in inventaire">{{ item.nom }}</li>
+        <li v-for="item in inventaire">{{ item.nom}} <img :src="`/assets/${item.icon}`" alt="" style="width:80px; height:80px;"></li>
       </ul>
     </div>
   <!-- </div>  -->

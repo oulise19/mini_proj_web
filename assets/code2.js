@@ -42,7 +42,7 @@ let coffre_fortImage = L.icon({
           iconUrl: "assets/coffre_fort.png",
           iconSize: [30, 40],
           iconAnchor: [15, 40]
-        });
+        }); 
 
 
 const app = Vue.createApp({
@@ -61,7 +61,6 @@ const app = Vue.createApp({
        
     },
     methods: {
-
         //permet d'ajouter les objets sur la map
         aj_obj() {
         let url='/api/objets';
@@ -70,18 +69,36 @@ const app = Vue.createApp({
         .then(objets => {
 
             this.objets = objets; 
+            this.creer_marker();
+
+            map.on('zoomend', () => {
+                    this.zoom_markers();
+                });        
+        })
+        .catch(error => {
+            console.error('Erreur:', error);
+        });
+        },
+
+
+    //permet de créer les markers à mettre sur la map
+    
+        creer_marker() {
             
-            objets.forEach(o => {
-          
+        this.markers = []; 
+        this.objets.forEach(o => {
+            //console.log('Objet avant push:', o);
+
             const lat = parseFloat(o.lat);
             const lon = parseFloat(o.lon);
+            console.log('Objet:', o.nom, 'zoom_min:', o.zoom_min, 'visible:', o.visible);
 
             //aj les autres images avec des if
             let icon;
             if (o.nom === "Marteau") {
-                icon = marteauImage;
+               icon = marteauImage;
             } 
-            if (o.nom === 'La couronne de l\'impératrice Eugénie') {
+            if (o.nom === 'Couronne') {
                 icon = couronneImage;
             }
             if (o.nom === "Collier Marie-Amelie") {
@@ -94,58 +111,107 @@ const app = Vue.createApp({
                 icon = coffre_fortImage;
             }
             const marker = L.marker([lat, lon], { icon: icon })
-                .addTo(map)
                 .bindPopup(o.nom);
-            
 
             marker.on('click', () => this.ramasser_obj(o)); 
             this.markerMap[o.id] = marker; 
+            
+            this.markers.push({marker: marker, 
+                objet: o
+
 
             });
-        })
-        .catch(error => {
-            console.error('Erreur:', error);
         });
+             //console.log('Markers créés:', this.markers.length);
+            this.zoom_markers();
+            
+        },
+
+        //gerer le zoom/visibilité des objets sur la map
+        zoom_markers() {
+            let zoomActuel = map.getZoom();
+
+            //console.log('Zoom actuel:', zoomActuel);
+            //console.log('Nombre de markers:', this.markers.length);
+            
+            this.markers.forEach(m => {
+                //si le zoom est supérieur ou égal au zoom_min de l'objet, on l'affiche
+               
+                if (zoomActuel >= m.objet.zoom_min) {
+                    m.marker.addTo(map);
+                    } else {
+                    map.removeLayer(m.marker);
+                    }
+                });
         },
 
     //nouvelle méthode pour ramasser les objets   
         ramasser_obj(objet) {
             //parchemin : l'objet donne un code
             if (objet.type === 'code') {
-            if (!this.inventaire.find(i => i.id === objet.id)) {
-                this.inventaire.push(objet);
-                alert('Vous ramassez : ' + objet.nom + '\nVous obtenez le code : ' + objet.code + ' ' +objet.indice);
-                
-            } else {
-                alert('Objet déjà dans l’inventaire');
-            }
+                if (!this.inventaire.find(i => i.id === objet.id)) {
+                    //ajouter à l'inventaire
+                    this.inventaire.push(objet);
+                    alert('Vous ramassez : ' + objet.nom + '\nVous obtenez le code : ' + objet.code + ' ' +objet.indice);
+                    
+                    
+                    //supprimer le marker de la carte
+                    map.closePopup();
+                    let markerItem = this.markers.find(m => m.objet.id === objet.id);
+                                if (markerItem) {
+                                    markerItem.marker.closePopup();
+                                    map.removeLayer(markerItem.marker);
+                                    this.markers = this.markers.filter(m => m.objet.id !== objet.id);
+                                }
+                } else {
+                    alert('Objet déjà dans l\’inventaire');
+                }
             }
             //collier : objet bloqué par un code 
             else if (objet.type === 'bloque_code') {
 
-                 if (!this.inventaire.find(i => i.id === objet.id)) {
-                    let userCode = '';
-                
-                // tant que l'utilisateur n'a pas entré le bon code
-                while (userCode !== objet.code) {
-                if (!this.inventaire.find(i => i.id === objet.id)) {
-                    let userCode = prompt('Quel est le code pour ouvrir le ' + objet.nom + ' :');
-                    if (userCode === objet.code) {
-                        this.inventaire.push(objet);
-                        alert('Code correct ! Vous récupérez la ' + objet.nom + 
-                                'Vous ramassez une loupe! Elle vous indique de zoomer sur la Tour Eiffel');
-                    } else {
-                        alert('Code incorrect. Réessayez.');
-                    }  
-                }             
+                    if (!this.inventaire.find(i => i.id === objet.id)) {
+                        let userCode = '';
+                    
+                    // tant que l'utilisateur n'a pas entré le bon code
+                    while (userCode !== objet.code) {
+                        
+                        //ajouter case dans sql pour adapter le message selon l'objet
+                        //à changer 
+                        userCode = prompt('Quel était le mot de passe du système de vidéosurveillance du Louvre :');
+                        
+                        if (userCode === null) {
+                            // L'utilisateur a annulé la saisie
+                            alert('Action annulée.');
+                            return;
+                        } else if (userCode === objet.code) {
+                            //Aj à l'inventaire
+                            this.inventaire.push(objet);
+                            alert('Code correct ! Vous récupérez la ' + objet.nom);    
+                            
+                            //supprimer le marker de la carte
+                            //supp tous les pop ups ouverts sinon ca bug
+                            map.closePopup();
+                            let markerItem = this.markers.find(m => m.objet.id === objet.id);
+                                if (markerItem) {
+                                    markerItem.marker.closePopup();
+                                    map.removeLayer(markerItem.marker);
+                                    this.markers = this.markers.filter(m => m.objet.id !== objet.id);
+                                }
+                        } else {
+                            alert('Code incorrect. Réessayez.');
+                        
+                        }  
+                     }
+            
+            } else {
+                alert('Objet déjà dans l’\inventaire');
+            }           
                     
                 }
                
                 }
             }
-        },
-    },
-
-});
+        });
 
 app.mount('#app');
