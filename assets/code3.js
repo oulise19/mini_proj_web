@@ -66,8 +66,8 @@ const app = Vue.createApp({
         if (objet.type === 'libere' && !forcer) return;
 
       const image_marqueur = L.icon({
-        iconUrl: "/icon/" + objet.icon,
-        //iconUrl: "/assets/" + objet.icon,
+        //iconUrl: "/icon/" + objet.icon,
+        iconUrl: "/assets/" + objet.icon,
         iconSize: [40, 40]
       });
 
@@ -124,6 +124,7 @@ const app = Vue.createApp({
       //map.closePopup(); (peut etre que yen aura besoin si bug au moment du dézoom)
       map.removeLayer(marqueur);
       marqueurs = marqueurs.filter(m => m !== marqueur);
+      
 
       if (objet.nom === 'Lettre') {
         alert(objet.description);
@@ -161,23 +162,28 @@ const app = Vue.createApp({
       }
     },
 
-    //ajouter mes deux méthodes 
-    objet_code(objet, marqueur) {
-        if (this.inventaire.find(i => i.id === objet.id)) {
-            //aj inventaire
-            this.inventaire.push(objet);
-            //est ce qu'on doit mettre le score ?
-            this.score += 10;
-            alert('Vous ramassez : ' + objet.nom + '\nVous obtenez le code :' + objet.code);
-            
-            //supprimer le marker de la carte
-            //map.closePopup(); (peut etre que yen aura besoin si bug au moment du dézoom)
-            map.removeLayer(marqueur);
-            marqueurs = marqueurs.filter(m => m !== marqueur);
+   objet_code(objet, marqueur) {
+    
+    if (!this.inventaire.find(i => i.id === objet.id)) {
+        console.log('Ajout de ' + objet.nom + ' à l\'inventaire');
+        
+        // Ajouter à l'inventaire
+        this.inventaire.push(objet);
+        
+        // Ajouter des points
+        this.score += 10;
+        
+        alert('Vous ramassez : ' + objet.nom + '\nVous obtenez le code : ' + objet.code);
+        
+        // Supprimer le marker de la carte
+        map.closePopup();
+        map.removeLayer(marqueur);
+        marqueurs = marqueurs.filter(m => m !== marqueur);
+        
         } else {
-            alert('Objet déjà dans l’inventaire');
+            console.log(objet.nom + ' déjà dans l\'inventaire');
+            alert('Objet déjà dans l\'inventaire');
         }   
-
     },
 
 
@@ -220,6 +226,7 @@ const app = Vue.createApp({
             }
             }
         } else {
+          console.log(objet.nom + ' déjà dans l’inventaire');
             alert('Objet déjà dans l\'inventaire');
         }
     },
