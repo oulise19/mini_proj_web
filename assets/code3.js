@@ -6,6 +6,7 @@ const app = Vue.createApp({
     return {
       showIntro: true,
       inventaire: [],
+      objets: [],
       score: 0,
       jeuTermine: false,
       hallOfFame: [],
@@ -37,6 +38,9 @@ const app = Vue.createApp({
           .then(res => res.json())
           .then(data => {
             data.forEach(objet => {
+             
+             //!!!!!!!!!!!!!!!!!!A ajouter !!!!!!!!! ->
+              this.objets = data; 
               this.ajouter_marqueur(objet);
             });
             //ajout de la méthode zoom_markers ici
@@ -62,7 +66,8 @@ const app = Vue.createApp({
         if (objet.type === 'libere' && !forcer) return;
 
       const image_marqueur = L.icon({
-        iconUrl: "/icons/" + objet.icon,
+        iconUrl: "/icon/" + objet.icon,
+        //iconUrl: "/assets/" + objet.icon,
         iconSize: [40, 40]
       });
 
@@ -191,7 +196,7 @@ const app = Vue.createApp({
             } else if (userCode === objet.code) {
                 // Aj l'objet principal à l'inventaire
                 this.inventaire.push(objet);
-                //score ???
+                //score
                 this.score += 10;
         
                 alert('Code correct ! Vous récupérez ' + objet.nom);
@@ -202,12 +207,13 @@ const app = Vue.createApp({
                 marqueurs = marqueurs.filter(m => m !== marqueur);
                 
                 // Trouver et ajouter les objets libérés directement à l'inventaire
-                this.objets.forEach(obj => {
-                    if (obj.bloquant_id === objet.id) {
-                        this.inventaire.push(obj);
-                        alert('Vous obtenez aussi : ' + obj.nom + (obj.indice ? '\n' + obj.indice : ''));
+                if (objet.objet_libere_id) {
+                    let objetLibere = this.objets.find(obj => obj.id === objet.objet_libere_id);
+                    if (objetLibere) {
+                        this.inventaire.push(objetLibere);
+                        alert('Vous obtenez aussi : ' + objetLibere.nom + (objetLibere.indice ? '\n' + objetLibere.indice : ''));
                     }
-                });
+                }
                 
             } else {
                 alert('Code incorrect. Réessayez.');
