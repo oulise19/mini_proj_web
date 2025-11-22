@@ -63,7 +63,7 @@ error_reporting(E_ALL);
 
 
 <script src="https://cdn.jsdelivr.net/npm/vue@3"></script>
-<script src="assets/code2.js"></script>
+<script src="assets/code3.js"></script>
 
 </body>
 </html>

@@ -44,6 +44,12 @@ let coffre_fortImage = L.icon({
           iconAnchor: [15, 40]
         }); 
 
+let loupeImage= L.icon({
+          iconUrl: "assets/loupe.png",
+          iconSize: [30, 40],
+          iconAnchor: [15, 40]
+        }); 
+
 
 const app = Vue.createApp({
     data() {
@@ -147,6 +153,25 @@ const app = Vue.createApp({
 
     //nouvelle méthode pour ramasser les objets   
         ramasser_obj(objet) {
+            //aj obj pour obj récupérable éventuellement dans la base de donnée
+            //gérer les différents types d'objets
+            //objet récupérable directement : ancien code : merge celui de emma
+            if (objet.type === 'recuperable') 
+                { if (!this.inventaire.find(i => i.id === objet.id)) {
+                this.inventaire.push(objet); 
+                alert('Vous ramassez : ' + objet.nom); 
+            } 
+                
+           // Supprimer le marker de la carte
+            const marker = this.markerMap[objet.id];
+                if (marker) {
+                this.map.removeLayer(marker);
+                delete this.markerMap[objet.id];
+                }
+
+           else { alert('Objet déjà dans l’inventaire'); 
+           } 
+          } 
             //parchemin : l'objet donne un code
             if (objet.type === 'code') {
                 if (!this.inventaire.find(i => i.id === objet.id)) {
@@ -176,9 +201,10 @@ const app = Vue.createApp({
                     // tant que l'utilisateur n'a pas entré le bon code
                     while (userCode !== objet.code) {
                         
-                        //ajouter case dans sql pour adapter le message selon l'objet
-                        //à changer 
-                        userCode = prompt('Quel était le mot de passe du système de vidéosurveillance du Louvre :');
+                        
+                        
+                        //console.log('Question code:', objet.question_code);
+                        userCode = prompt(objet.question_code);
                         
                         if (userCode === null) {
                             // L'utilisateur a annulé la saisie
@@ -187,7 +213,14 @@ const app = Vue.createApp({
                         } else if (userCode === objet.code) {
                             //Aj à l'inventaire
                             this.inventaire.push(objet);
-                            alert('Code correct ! Vous récupérez la ' + objet.nom);    
+                            alert('Code correct ! Vous récupérez la ' + objet.nom);
+                            
+                            console.log('Obj recup :', objet.objet_recup); 
+                            console.log('Indice obj recup :', objet.indice_obj_recup);
+                            console.log('Image obj recup :', objet.image_obj_recup);
+
+                            alert('Vous obtenez' + objet.objet_recup + ' ' + objet.indice_obj_recup);
+                            this.inventaire.push(objet.objet_recup);  
                             
                             //supprimer le marker de la carte
                             //supp tous les pop ups ouverts sinon ca bug

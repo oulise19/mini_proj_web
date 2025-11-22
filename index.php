@@ -25,7 +25,7 @@ Flight::route('GET /api/objets', function() {
     $sql = "
         SELECT id, nom, type, description, indice, bloquant_id,
                ST_X(geom) AS lon, ST_Y(geom) AS lat,
-               icon, visible, zoom_min, code
+               icon, visible, zoom_min, code, question_code, objet_recup, indice_obj_recup, image_obj_recup
         FROM objets
         WHERE visible = TRUE
     ";
