@@ -25,7 +25,7 @@ Flight::route('GET /api/objets', function() {
     $sql = "
         SELECT id, nom, type, description, indice, bloquant_id,
                ST_X(geom) AS lon, ST_Y(geom) AS lat,
-               icon, visible, zoom_min, code, question_code, objet_recup, indice_obj_recup, image_obj_recup
+               icon, visible, zoom_min, code, question_code, objet_libere_id
         FROM objets
         WHERE visible = TRUE
     ";
@@ -45,12 +45,69 @@ Flight::route('GET /api/objets/@id', function($id) {
     else Flight::json(['error' => 'Objet non trouvé'], 404);
 });
 
-// Pages HTML
+/* Pages HTML */
 Flight::route('GET /', function() {
     require __DIR__ . '/views/accueil.php';
 });
 
-Flight::route('GET /accueil', function() {
+
+Flight::route('POST /api/scores', function() {
+    $db = Flight::db();
+    $data = Flight::request()->data;
+
+    if (empty($data->pseudo) || !isset($data->score)) {
+        Flight::json(['error' => 'Pseudo et score requis'], 400);
+        return;
+    }
+
+    $pseudo = trim($data->pseudo);
+    $score = (int)$data->score;
+
+    // Validation du pseudo
+    if (strlen($pseudo) < 2 || strlen($pseudo) > 50) {
+        Flight::json(['error' => 'Le pseudo doit contenir entre 2 et 50 caractères'], 400);
+        return;
+    }
+
+    // Insertion du score
+    $stmt = $db->prepare("
+        INSERT INTO scores (pseudo, score) 
+        VALUES (?, ?)
+        RETURNING id, pseudo, score, date_jeu
+    ");
+
+    try {
+        $stmt->execute([$pseudo, $score]);
+        $result = $stmt->fetch(PDO::FETCH_ASSOC);
+        Flight::json($result, 201);
+    } catch (Exception $e) {
+        Flight::json(['error' => 'Erreur lors de la sauvegarde du score'], 500);
+    }
+});
+
+/* =====================================================
+   API : Top 10 des scores (Hall of Fame)
+===================================================== */
+Flight::route('GET /api/scores/top', function() {
+    $db = Flight::db();
+
+    $stmt = $db->query("
+        SELECT 
+            id,
+            pseudo,
+            score,
+            date_jeu,
+            ROW_NUMBER() OVER (ORDER BY score DESC) as rang
+        FROM scores
+        ORDER BY score DESC
+        LIMIT 10
+    ");
+
+    Flight::json($stmt->fetchAll(PDO::FETCH_ASSOC));
+});
+
+/* Pages HTML */
+Flight::route('GET /', function() {
     require __DIR__ . '/views/accueil.php';
 });
 
