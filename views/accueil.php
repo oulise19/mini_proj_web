@@ -4,66 +4,95 @@ ini_set('display_startup_errors', 1);
 error_reporting(E_ALL);
 ?>
 <!DOCTYPE html>
-<html>
+<html lang="fr">
 <head>
   <meta charset="utf-8" />
   <title>Vol du Louvre</title>
 
-  <!-- Leaflet CSS from CDN -->
-  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
-        integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY="
-        crossorigin=""/>
-  
-  <!-- Leaflet JS from CDN -->
-  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
-          integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo="
-          crossorigin=""></script>
+  <!-- CSS local -->
+  <link rel="stylesheet" href="assets/style.css" />
 
-  <!-- Your custom CSS -->
-  <link rel="stylesheet" href="assets/style.css">
+  <!-- Leaflet -->
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 
+  <!-- Vue 3 -->
+  <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
 </head>
 
 <body>
+  <div id="app">
 
-<div id="app">  
+    <div v-if="showIntro" class="intro-screen">
 
-  <!-- ÉCRAN D'INTRO -->
-<!--  <div v-if="showIntro" class="intro-screen">
-    <div class="intro-box">
+      <div class="intro-box">
+        <h1>Cambriolage du Louvre</h1>
+        <p>
+          Bienvenue à "Vol du Louvre",<br>
+          Vous êtes un détective privé.<br>
+          Votre première mission concerne le braquage du Louvre.<br>
+          Retrouvez les objets volés dissimulés dans Paris.<br>
+          À vous de jouer !
+        </p>
+
+        <button @click="debut_jeu">Commencer</button>
+
+        <div v-if="hallOfFame.length > 0" class="hall-of-fame">
+          <h2> Hall of Fame</h2>
+          <table>
+            <thead>
+              <tr>
+                <th>Rang</th>
+                <th>Pseudo</th>
+                <th>Score</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr v-for="score in hallOfFame" :key="score.id">
+                <td :class="'rank-' + score.rang">{{ score.rang }}</td>
+                <td>{{ score.pseudo }}</td>
+                <td>{{ score.score }}</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+      </div>
+    </div>
+
+    <div v-else class="interface-grid">
+
       <h1>Vol du Louvre</h1>
-      <p>
-        Retrouvez les bijoux volés du Louvre ! 
-        Vous êtes un détective privé du 5e arrondissement.
-        Vous devez retracer le parcours des voleurs et retrouver les joyaux volés.
 
-        Les recherches commencent au Louvre, au centre de Paris. À vous de jouer !!!
-      </p>
-      <button @click="startGame">Commencer</button>
+      <div class="inventaire">
+        <h2>Inventaire</h2>
+        <ul>
+          <li v-for="item in inventaire">{{ item.nom}} <img :src="`/assets/${item.icon}`" alt="" style="width:80px; height:80px;"></li>
+          <!--pour ca marche chez toi-->
+          <!--<li v-for="item in inventaire">{{ item.nom}} <img :src="`/icon/${item.icon}`" alt="" style="width:80px; height:80px;"></li>-->
+        </ul>
+        </ul>
+      </div>
+
+      <div class="score">
+        <h2>Score</h2>
+        <p>{{ score }} points</p>
+        
+        <!-- AJOUT : Checkbox pour la heatmap ICI -->
+        <div class="heatmap-toggle">
+          <label>
+            <input type="checkbox" @change="charger_heatmap" :checked="showHeatmap">
+            Mode triche
+          </label>
+        </div>
+      </div>
+
+      <div id="map"></div>
+
     </div>
+
   </div>
--->
 
-  <!-- LE JEU -->
-  <!--<div v-else>  -->
-    <h1>Trouve les objets volés du Louvre !</h1>
-
-     
-    <div id="inventaire">
-      <h3>Inventaire :</h3>
-      <ul>
-        <li v-for="item in inventaire">{{ item.nom}} <img :src="`/assets/${item.icon}`" alt="" style="width:80px; height:80px;"></li>
-      </ul>
-    </div>
-  <!-- </div>  -->
-
-</div>
-
- <div id="map"></div>
-
-
-<script src="https://cdn.jsdelivr.net/npm/vue@3"></script>
-<script src="assets/code3.js"></script>
-
+  <script src="/assets/code3.js"></script>
 </body>
 </html>

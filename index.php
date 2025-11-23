@@ -51,7 +51,7 @@ Flight::route('GET /', function() {
 });
 
 
-Flight::route('POST /api/scores', function() {
+Flight::route('GET /api/scores', function() {
     $db = Flight::db();
     $data = Flight::request()->data;
 
