@@ -6,25 +6,39 @@ const app = Vue.createApp({
     return {
       showIntro: true,
       inventaire: [],
-      objets: [],
       score: 0,
       jeuTermine: false,
       hallOfFame: [],
       heatmapLayer: null,
-      showHeatmap: false
+      showHeatmap: false,
+      tempsRestant: 300, 
+      chronoInterval: null,
+      chronoActif: false
     };
   },
+  
+
+  computed: {
+    tempsFormate() {
+      const minutes = Math.floor(this.tempsRestant / 60);
+      const secondes = this.tempsRestant % 60;
+      return `${minutes}:${secondes.toString().padStart(2, '0')}`;
+    }
+  },
+
   mounted() {
+    console.log('App montée');
     this.charger_hall_of_fame();
   },
 
-  methods: {
+  methods:{
 
     debut_jeu() {
       this.showIntro = false;
       this.jeuTermine = false;
       this.inventaire = [];
       this.score = 0;
+      this.tempsRestant = 300
 
       this.$nextTick(() => {
         map = L.map('map').setView([48.85, 2.35], 12);
@@ -33,6 +47,13 @@ const app = Vue.createApp({
           maxZoom: 19,
           attribution: '&copy; OpenStreetMap'
         }).addTo(map);
+
+        this.heatmapLayer = L.tileLayer.wms('http://localhost:8081/geoserver/escape_game/wms', {
+          layers: 'escape_game:objets',
+          format: 'image/png',
+          transparent: true,
+          attribution: 'GeoServer'
+        });
 
         fetch('/api/objets')
           .then(res => res.json())
@@ -46,18 +67,46 @@ const app = Vue.createApp({
             //ajout de la méthode zoom_markers ici
             this.zoom_markers();
 
+            this.demarrer_chrono();
+             
+
             //changment : zoom_markers appelé au chargement des marqueurs
             map.on('zoomend', () => {
                 this.zoom_markers();
             });   
           });
       });
-      this.heatmapLayer = L.tileLayer.wms('http://localhost:8080/geoserver/escape_game/wms', {
-      layers: 'escape_game:objets',
-      format: 'image/png',
-      transparent: true,
-      attribution: 'GeoServer'
-      });
+      
+    },
+
+    demarrer_chrono() {
+      console.log('Chrono démarré');
+      this.chronoActif = true;
+      this.chronoInterval = setInterval(() => {
+        if (this.tempsRestant > 0) {
+          this.tempsRestant--;
+        } else {
+          this.arreter_chrono();
+          this.temps_ecoule();
+        }
+      }, 1000);
+    },
+
+  
+    arreter_chrono() {
+      console.log('Chrono arrêté');
+      if (this.chronoInterval) {
+        clearInterval(this.chronoInterval);
+        this.chronoInterval = null;
+        this.chronoActif = false;
+      }
+    },
+
+    temps_ecoule() {
+      alert(' Temps écoulé ! Vous n\'avez pas trouvé tous les objets à temps.');
+      // Pénalité : diviser le score par 2
+      this.score = Math.floor(this.score / 2);
+      this.terminer_jeu();
     },
 
     // ajouter un marqueur sur la carte MAIS maitenant on ne l'affiche plus tt de suite
@@ -82,7 +131,7 @@ const app = Vue.createApp({
         } else if (objet.type === 'code') {
             this.objet_code(objet, marqueur);
         }
-        else if (objet.type === 'recuperable') {
+        else if (objet.type === 'recuperable'|| objet.type === 'libere') {
           this.objet_recuperable(objet, marqueur);
         }
         else if (objet.type === 'bloque_code') {
@@ -94,7 +143,7 @@ const app = Vue.createApp({
       marqueurs.push(marqueur);
 
        //console.log('Markers créés:', this.markers.length);
-        this.zoom_markers();
+      this.zoom_markers();
     },
 
 //gerer le zoom/visibilité des objets sur la map
@@ -116,7 +165,7 @@ const app = Vue.createApp({
         },
 
     objet_recuperable(objet, marqueur) {
-      this.inventaire.push(objet.nom);
+      this.inventaire.push(objet);
       this.score += 10;
 
       alert(`Vous avez trouvé : ${objet.nom}`);
@@ -127,24 +176,30 @@ const app = Vue.createApp({
       
 
       if (objet.nom === 'Lettre') {
-        alert(objet.description);
+        if (objet.description) {
+          alert(objet.description);
+        }
+      
         this.verifier_fin_jeu();
       }
     },
 
     objet_bloque_par_objet(objet, marqueur) {
-        //vérifier si l'objet bloquant est dans l'inventaire
-      if (objet.bloquant_nom && this.inventaire.includes(objet.bloquant_nom)) {
-
-        this.inventaire.push(objet.nom);
+      // Vérifier si l'objet bloquant est dans l'inventaire
+      const aObjetBloquant = this.inventaire.some(item => item.nom === objet.bloquant_nom);
+      
+      console.log('Objet bloquant requis:', objet.bloquant_nom);
+      console.log('A l\'objet bloquant ?', aObjetBloquant);
+      console.log('Inventaire:', this.inventaire.map(i => i.nom));
+      
+      if (objet.bloquant_nom && aObjetBloquant) {
+        this.inventaire.push(objet);
         this.score += 10;
         alert(`Vous avez utilisé ${objet.bloquant_nom} !`);
 
-        //map.closePopup(); (peut etre que yen aura besoin si bug au moment du dézoom)
         map.removeLayer(marqueur);
         marqueurs = marqueurs.filter(m => m !== marqueur);
 
-        //y faudrait pas push dans l'inventaire plutôt (voir méthode bloquer obj)
         if (objet.objet_libere_id) {
           fetch(`/api/objets/${objet.objet_libere_id}`)
             .then(res => res.json())
@@ -152,8 +207,7 @@ const app = Vue.createApp({
               this.ajouter_marqueur(nouvel_objet, true);
             });
         }
-      } 
-      else {
+      } else {
         fetch(`/api/objets/${objet.id}`)
           .then(res => res.json())
           .then(data => {
@@ -161,6 +215,7 @@ const app = Vue.createApp({
           });
       }
     },
+
 
    objet_code(objet, marqueur) {
     
@@ -173,76 +228,102 @@ const app = Vue.createApp({
         // Ajouter des points
         this.score += 10;
         
-        alert('Vous ramassez : ' + objet.nom + '\nVous obtenez le code : ' + objet.code);
+        alert('Vous ramassez : ' + objet.nom + '\nVous obtenez le code : ' + objet.code + '\nIndice : ' + objet.indice);
         
         // Supprimer le marker de la carte
-        map.closePopup();
+        //map.closePopup();
         map.removeLayer(marqueur);
         marqueurs = marqueurs.filter(m => m !== marqueur);
-        
+        this.verifier_fin_jeu();
         } else {
             console.log(objet.nom + ' déjà dans l\'inventaire');
             alert('Objet déjà dans l\'inventaire');
         }   
     },
 
-
     objet_bloque_par_code(objet, marqueur) {
-    if (!this.inventaire.find(i => i.id === objet.id)) {
-        let userCode = '';
-        
-        //tant que l'utilisateur n'a pas entré le bon code
-        while (userCode !== objet.code) {
-            userCode = prompt(objet.question_code);
+      
+        if (!this.inventaire.find(i => i.id === objet.id)) {
+            console.log('code attendu =', objet.code);
+            
+            // Demander le code
+            let userCode = prompt(objet.question_code);
             
             if (userCode === null) {
                 // L'utilisateur a annulé la saisie
                 alert('Action annulée.');
                 return;
-            } else if (userCode === objet.code) {
-                // Aj l'objet principal à l'inventaire
+            }
+            
+            // Normaliser : enlever espaces et mettre en minuscules pour comparer
+            const userCodeNormalized = userCode.trim().toLowerCase();
+            const codeAttendu = objet.code.trim().toLowerCase();
+            
+            console.log('Code entré (normalisé):', userCodeNormalized);
+            console.log('Code attendu (normalisé):', codeAttendu);
+            
+            if (userCodeNormalized === codeAttendu) {
+                // Ajouter l'objet principal à l'inventaire
                 this.inventaire.push(objet);
-                //score
+                // Score
                 this.score += 10;
         
                 alert('Code correct ! Vous récupérez ' + objet.nom);
                 
                 // Supprimer le marker de la carte
-                map.closePopup();
                 map.removeLayer(marqueur);
                 marqueurs = marqueurs.filter(m => m !== marqueur);
                 
-                // Trouver et ajouter les objets libérés directement à l'inventaire
                 if (objet.objet_libere_id) {
-                    let objetLibere = this.objets.find(obj => obj.id === objet.objet_libere_id);
-                    if (objetLibere) {
-                        this.inventaire.push(objetLibere);
-                        alert('Vous obtenez aussi : ' + objetLibere.nom + (objetLibere.indice ? '\n' + objetLibere.indice : ''));
-                    }
+                let objetLibere = this.objets.find(obj => obj.id === objet.objet_libere_id);
+                
+                if (objetLibere) {
+                    console.log('Objet libéré:', objetLibere.nom);
+                    // Créer un nouveau marqueur pour l'objet libéré
+                    this.ajouter_marqueur(objetLibere, true);
+                    alert(`Un nouvel objet est apparu sur la carte : ${objetLibere.nom}` + `\n\nIndice : ${objetLibere.indice}`);
                 }
+            }
+                this.verifier_fin_jeu();
                 
             } else {
-                alert('Code incorrect. Réessayez.');
-            }
+                // Code incorrect, permettre de réessayer
+                alert('Code incorrect. Réessayez en cliquant à nouveau sur l\'objet.');
             }
         } else {
-          console.log(objet.nom + ' déjà dans l’inventaire');
+            console.log(objet.nom + ' déjà dans l\'inventaire');
             alert('Objet déjà dans l\'inventaire');
         }
     },
 
 
+    
+
     verifier_fin_jeu() {
       if (marqueurs.length === 0) {
+        this.arreter_chrono();
+        
+        if (this.tempsRestant > 0) {
+          const bonus = this.tempsRestant * 2;
+          this.score += bonus;
+          alert(`⏱️ Bonus temps : +${bonus} points (${this.tempsRestant}s restantes) !`);
+        }
+        
         this.terminer_jeu();
       }
     },
 
     terminer_jeu() {
       this.jeuTermine = true;
-      let pseudo = prompt(
-        `Félicitations !\nVotre score : ${this.score} points.\n\nEntrez votre pseudo :`
-      );
+      
+      let message = `🎉 FÉLICITATIONS !\nVous avez terminé le jeu !\n\nVotre score : ${this.score} points.`;
+      
+      if (this.tempsRestant > 0) {
+        message += `\nTemps restant : ${this.tempsFormate}`;
+      } else {
+        message += `\n Temps écoulé - Score réduit de moitié`;
+      }
+      let pseudo = prompt(message + '\n\nEntrez votre pseudo :');
 
       if (!pseudo) {
         alert("Score non sauvegardé.");
@@ -280,15 +361,27 @@ const app = Vue.createApp({
         });
     },
 
-    charger_heatmap() {
-      if (map.hasLayer(this.heatmapLayer)) {
-      map.removeLayer(this.heatmapLayer);
-      this.showHeatmap = false;
-      } else {
-      this.heatmapLayer.addTo(map);
-      this.showHeatmap = true;
+    toggle_heatmap() {
+      console.log('Toggle heatmap appelé');
+      
+      if (!map) {
+        alert('Veuillez d\'abord commencer le jeu');
+        return;
       }
-}
+
+      if (!this.heatmapLayer) {
+        alert('Carte de chaleur non disponible');
+        return;
+      }
+
+      if (map.hasLayer(this.heatmapLayer)) {
+        map.removeLayer(this.heatmapLayer);
+        this.showHeatmap = false;
+      } else {
+        this.heatmapLayer.addTo(map);
+        this.showHeatmap = true;
+      }
+    }
 
   }
 

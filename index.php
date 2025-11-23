@@ -14,20 +14,33 @@ Flight::register('db', 'PDO', [
 // Test DB
 Flight::route('/test-db', function() {
     $pdo = Flight::db();
-    $r = $pdo->query("SELECT * FROM points")->fetchAll(PDO::FETCH_ASSOC);
+    $r = $pdo->query("SELECT * FROM objets")->fetchAll(PDO::FETCH_ASSOC);
     Flight::json($r ?: []);
 });
 
-// Liste objets visibles
+/* =====================================================
+   API : Tous les objets
+===================================================== */
 Flight::route('GET /api/objets', function() {
     $db = Flight::db();
 
     $sql = "
-        SELECT id, nom, type, description, indice, bloquant_id,
-               ST_X(geom) AS lon, ST_Y(geom) AS lat,
-               icon, visible, zoom_min, code, question_code, objet_libere_id
-        FROM objets
-        WHERE visible = TRUE
+        SELECT 
+            o.id,
+            o.nom,
+            o.type,
+            o.description,
+            o.indice,
+            o.bloquant_id,
+            o.bloquant_nom,
+            o.icon,
+            ST_X(o.geom) AS lon,
+            ST_Y(o.geom) AS lat,
+            o.zoom_min,
+            o.code,
+            o.objet_libere_id,
+            o.question_code
+        FROM objets o
     ";
 
     $stmt = $db->query($sql);
@@ -37,21 +50,45 @@ Flight::route('GET /api/objets', function() {
 // Détail objet
 Flight::route('GET /api/objets/@id', function($id) {
     $db = Flight::db();
-    $stmt = $db->prepare("SELECT * FROM objets WHERE id = ?");
+    $stmt = $db->prepare("
+        SELECT 
+            o.id,
+            o.nom,
+            o.type,
+            o.description,
+            o.indice,
+            o.bloquant_id,
+            o.bloquant_nom,
+            o.icon,
+            ST_X(o.geom) AS lon,
+            ST_Y(o.geom) AS lat,
+            o.zoom_min,
+            o.code,
+            o.objet_libere_id,
+            o.question_code
+        FROM objets o
+        WHERE o.id = ?
+    ");
     $stmt->execute([$id]);
-    $obj = $stmt->fetch(PDO::FETCH_ASSOC);
+    $objet = $stmt->fetch(PDO::FETCH_ASSOC);
 
-    if ($obj) Flight::json($obj);
-    else Flight::json(['error' => 'Objet non trouvé'], 404);
+    if ($objet) {
+        Flight::json($objet);
+    } else {
+        Flight::json(['error' => 'Objet non trouvé'], 404);
+    }
 });
+
 
 /* Pages HTML */
 Flight::route('GET /', function() {
     require __DIR__ . '/views/accueil.php';
 });
 
-
-Flight::route('GET /api/scores', function() {
+/* =====================================================
+   API : Sauvegarder un score
+===================================================== */
+Flight::route('POST /api/scores', function() {
     $db = Flight::db();
     $data = Flight::request()->data;
 

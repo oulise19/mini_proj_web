@@ -25,6 +25,7 @@ error_reporting(E_ALL);
 
     <div v-if="showIntro" class="intro-screen">
 
+      <!-- Écran d'introduction -->
       <div class="intro-box">
         <h1>Cambriolage du Louvre</h1>
         <p>
@@ -38,7 +39,7 @@ error_reporting(E_ALL);
         <button @click="debut_jeu">Commencer</button>
 
         <div v-if="hallOfFame.length > 0" class="hall-of-fame">
-          <h2> Hall of Fame</h2>
+          <h2> 🏆 Hall of Fame</h2>
           <table>
             <thead>
               <tr>
@@ -65,24 +66,29 @@ error_reporting(E_ALL);
       <h1>Vol du Louvre</h1>
 
       <div class="inventaire">
-        <h2>Inventaire</h2>
-        <ul>
-          <li v-for="item in inventaire">{{ item.nom}} <img :src="`/assets/${item.icon}`" alt="" style="width:80px; height:80px;"></li>
-          <!--pour ca marche chez toi-->
-          <!--<li v-for="item in inventaire">{{ item.nom}} <img :src="`/icon/${item.icon}`" alt="" style="width:80px; height:80px;"></li>-->
-        </ul>
-        </ul>
-      </div>
+    <h2>Inventaire</h2>
+    <ul v-if="inventaire.length > 0">
+        <li v-for="item in inventaire" :key="item.id">
+            {{ item.nom }}
+            <img :src="`/assets/${item.icon}`" :alt="item.nom" style="width:60px; height:60px;">
+        </li>
+    </ul>
+    <p v-else style="opacity: 0.6;">Vide</p>
+</div>
 
-      <div class="score">
-        <h2>Score</h2>
-        <p>{{ score }} points</p>
+       <div class="score">
+        <h2> Score</h2>
+        <p class="score-points">{{ score }} points</p>
         
-        <!-- AJOUT : Checkbox pour la heatmap ICI -->
+        <div class="chrono" :class="{ 'chrono-danger': tempsRestant < 60 }">
+          <h3>Temps</h3>
+          <p class="temps">{{ tempsFormate }}</p>
+        </div>
+        
         <div class="heatmap-toggle">
           <label>
-            <input type="checkbox" @change="charger_heatmap" :checked="showHeatmap">
-            Mode triche
+            <input type="checkbox" @change="toggle_heatmap" :checked="showHeatmap">
+             Heatmap
           </label>
         </div>
       </div>
