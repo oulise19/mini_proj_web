@@ -29,7 +29,7 @@ VALUES
 (2, 'couronne', 'bloque_objet', 'Couronne magnifique du Louvre', 'Cherchez le marteau dans le jardin des Tuileries',
  1, 'marteau', 'couronne.png', ST_SetSRID(ST_MakePoint(2.3364, 48.8606), 4326), 3, 14);
 
---Lettre : 
+--Lettre (libérée par la couronne)
 INSERT INTO objets (id, nom, type, description, icon, geom, zoom_min)
 VALUES 
 (3, 'lettre', 'libere', 'Le collier se cache dans le Quartier Latin, près du Panthéon', 
@@ -42,23 +42,28 @@ VALUES
 (4, 'collier', 'bloque_code', 'Collier somptueux de Marie-Amélie'
 , 'collier.png', ST_SetSRID(ST_MakePoint(2.3469, 48.8462), 4326), 16,'Louvre', 5, 'Quel était le mot de passe du système de vidéosurveillance du Louvre');
 
+--Loupe (libérée par le collier)
 INSERT INTO objets (id, nom, type, indice, icon, geom, zoom_min)
 VALUES 
 (5, 'loupe', 'libere', 'Allez voir vers la tour Eiffel', 'loupe.png', ST_SetSRID(ST_MakePoint(2.3469, 48.8462), 4326), 16);
 
+--Parchemin (contenant un code)
 INSERT INTO objets (id, nom, type, description,indice, icon, geom, zoom_min, code)
 VALUES
 (6, 'parchemin', 'code', 'Parchemin ancien qui contient un code', 'Ca ressemble à un code postal', 'parchemin.png', ST_SetSRID(ST_MakePoint(2.2945, 48.8584), 4326), 17, '95380');
 
+--Coffre-fort (bloqué par le code du parchemin)
 INSERT INTO objets (id, nom, type, description, icon, geom, zoom_min, code, objet_libere_id, question_code)
 VALUES
 (7, 'coffre_fort', 'bloque_code', 'Reste des bijoux volés', 
 'coffre_fort.png', ST_SetSRID(ST_MakePoint(2.505, 49.039), 4326),14, '95380', 8, 'Quel est le code postal de ville dans laquelle vous êtes ?');
 
+-- Reste des bijoux (libéré par le coffre-fort)
 INSERT INTO objets (id, nom, type, indice, icon, geom, zoom_min)
 VALUES
 (8, 'reste_bijoux', 'libere', 'Vous avez retrouvé tous les bijoux volés', 'reste_bijoux.png', ST_SetSRID(ST_MakePoint(2.505, 49.039), 4326), 14);
 
+-- Création de la table scores
  CREATE TABLE IF NOT EXISTS scores (
     id SERIAL PRIMARY KEY,
     pseudo VARCHAR(50) NOT NULL,

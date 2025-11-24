@@ -123,7 +123,7 @@ Flight::route('POST /api/scores', function() {
 });
 
 /* =====================================================
-   API : Top 10 des scores (Hall of Fame)
+   API : Top 10 des scores 
 ===================================================== */
 Flight::route('GET /api/scores/top', function() {
     $db = Flight::db();

@@ -16,7 +16,7 @@ error_reporting(E_ALL);
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 
-  <!-- Vue 3 -->
+  <!-- Vue -->
   <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
 </head>
 
@@ -29,15 +29,15 @@ error_reporting(E_ALL);
       <div class="intro-box">
         <h1>Cambriolage du Louvre</h1>
         <p>
-          Bienvenue à "Vol du Louvre",<br>
-          Vous êtes un détective privé.<br>
-          Votre première mission concerne le braquage du Louvre.<br>
-          Retrouvez les objets volés dissimulés dans Paris.<br>
-          À vous de jouer !
+          Retrouvez les bijoux volés du Louvre !<br>
+          Vous êtes un détective privé
+          Vos recherches commencent au Louvre <br>
+          À vous de jouer !<br>
         </p>
 
         <button @click="debut_jeu">Commencer</button>
-
+      
+        <!--Hall of Fame-->
         <div v-if="hallOfFame.length > 0" class="hall-of-fame">
           <h2> 🏆 Hall of Fame</h2>
           <table>
@@ -63,22 +63,22 @@ error_reporting(E_ALL);
 
     <div v-else class="interface-grid">
 
-      <h1>Vol du Louvre</h1>
+          <h1>Vol du Louvre</h1>
 
-      <div class="inventaire">
-    <h2>Inventaire</h2>
-    <ul v-if="inventaire.length > 0">
-        <li v-for="item in inventaire" :key="item.id">
-            {{ item.nom }}
-            <img :src="`/assets/${item.icon}`" :alt="item.nom" style="width:60px; height:60px;">
-        </li>
-    </ul>
-    <p v-else style="opacity: 0.6;">Vide</p>
-</div>
+          <div class="inventaire">
+          <h2>Inventaire</h2>
+          <ul v-if="inventaire.length > 0">
+              <li v-for="item in inventaire" :key="item.id">
+                  {{ item.nom }}
+                  <img :src="`/assets/${item.icon}`" :alt="item.nom" style="width:60px; height:60px;">
+              </li>
+          </ul>
+      <p v-else style="opacity: 0.6;">Vide</p>
+    </div>
 
-       <div class="score">
+    <div class="score">
         <h2> Score</h2>
-        <p class="score-points">{{ score }} points</p>
+          <p class="score-points">{{ score }} points</p>
         
         <div class="chrono" :class="{ 'chrono-danger': tempsRestant < 60 }">
           <h3>Temps</h3>
@@ -90,10 +90,11 @@ error_reporting(E_ALL);
             <input type="checkbox" @change="toggle_heatmap" :checked="showHeatmap">
              Heatmap
           </label>
-        </div>
-      </div>
 
-      <div id="map"></div>
+        </div>
+    </div>
+
+    <div id="map"></div>
 
     </div>
 
