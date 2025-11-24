@@ -54,6 +54,9 @@ h1 {
   text-align: center;
   margin: 15px 0;
   letter-spacing: 1px;
+  color: rgb(253, 235, 184); 
+  text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5); 
+  white-space: nowrap;  
 }
 
 .interface {
