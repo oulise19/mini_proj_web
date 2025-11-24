@@ -67,7 +67,7 @@ Il y a 7 objets à retrouver au total avant la fin du chronomètre (5 minutes) p
  - HTML : accueil.php
  - Javascript : code3.js
  - Style : style.css
- - GéoServer : http://localhost:8080/geoserver/escape_game/wms
+ - GéoServer : http://localhost:8080/geoserver/escape_game/wms + fichier workspace
 
  
 
