@@ -48,7 +48,7 @@ const app = Vue.createApp({
           attribution: '&copy; OpenStreetMap'
         }).addTo(map);
 
-        this.heatmapLayer = L.tileLayer.wms('http://localhost:8081/geoserver/escape_game/wms', {
+        this.heatmapLayer = L.tileLayer.wms('http://localhost:8080/geoserver/escape_game/wms', {
           layers: 'escape_game:objets',
           format: 'image/png',
           transparent: true,
@@ -60,7 +60,7 @@ const app = Vue.createApp({
           .then(data => {
             data.forEach(objet => {
              
-             //!!!!!!!!!!!!!!!!!!A ajouter !!!!!!!!! ->
+            
               this.objets = data; 
               this.ajouter_marqueur(objet);
             });
@@ -205,6 +205,13 @@ const app = Vue.createApp({
             .then(res => res.json())
             .then(nouvel_objet => {
               this.ajouter_marqueur(nouvel_objet, true);
+
+               // Afficher le message avec la description
+                    let message = `Un nouvel objet est apparu sur la carte : ${nouvel_objet.nom}`;
+                    if (nouvel_objet.description) {
+                          message += `\n\n${nouvel_objet.description}`;
+                    }
+                    alert(message);
             });
         }
       } else {

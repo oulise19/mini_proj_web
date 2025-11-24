@@ -21,19 +21,19 @@ CREATE TABLE IF NOT EXISTS objets (
 INSERT INTO objets (id,nom, type, description, icon, geom, zoom_min)
 VALUES 
 (1, 'marteau', 'recuperable', 'Un marteau ancien, utile pour ouvrir certains objets.', 
- 'marteau.png', ST_SetSRID(ST_MakePoint(2.327, 48.863), 4326), 15);
+ 'marteau.png', ST_SetSRID(ST_MakePoint(2.327, 48.863), 4326), 16);
 
 -- Insertion de la couronne (bloquée par le marteau)
 INSERT INTO objets (id, nom, type, description, indice, bloquant_id, bloquant_nom, icon, geom, objet_libere_id, zoom_min)
 VALUES 
 (2, 'couronne', 'bloque_objet', 'Couronne magnifique du Louvre', 'Cherchez le marteau dans le jardin des Tuileries',
- 1, 'marteau', 'couronne.png', ST_SetSRID(ST_MakePoint(2.3364, 48.8606), 4326), 3, 16);
+ 1, 'marteau', 'couronne.png', ST_SetSRID(ST_MakePoint(2.3364, 48.8606), 4326), 3, 14);
 
 --Lettre : 
 INSERT INTO objets (id, nom, type, description, icon, geom, zoom_min)
 VALUES 
 (3, 'lettre', 'libere', 'Le collier se cache dans le Quartier Latin, près du Panthéon', 
- 'lettre.png', ST_SetSRID(ST_MakePoint(2.3364, 48.8606), 4326), 16);
+ 'lettre.png', ST_SetSRID(ST_MakePoint(2.3364, 48.8606), 4326), 14);
 
 
 --Collier Marie-Amelie (bloqué par un code)
@@ -42,9 +42,9 @@ VALUES
 (4, 'collier', 'bloque_code', 'Collier somptueux de Marie-Amélie'
 , 'collier.png', ST_SetSRID(ST_MakePoint(2.3469, 48.8462), 4326), 16,'Louvre', 5, 'Quel était le mot de passe du système de vidéosurveillance du Louvre');
 
-INSERT INTO objets (id, nom, type, indice, icon, geom)
+INSERT INTO objets (id, nom, type, indice, icon, geom, zoom_min)
 VALUES 
-(5, 'loupe', 'libere', 'Allez voir vers la tour Eiffel', 'loupe.png', ST_SetSRID(ST_MakePoint(2.3469, 48.8462), 4326));
+(5, 'loupe', 'libere', 'Allez voir vers la tour Eiffel', 'loupe.png', ST_SetSRID(ST_MakePoint(2.3469, 48.8462), 4326), 16);
 
 INSERT INTO objets (id, nom, type, description,indice, icon, geom, zoom_min, code)
 VALUES
@@ -55,9 +55,9 @@ VALUES
 (7, 'coffre_fort', 'bloque_code', 'Reste des bijoux volés', 
 'coffre_fort.png', ST_SetSRID(ST_MakePoint(2.505, 49.039), 4326),14, '95380', 8, 'Quel est le code postal de ville dans laquelle vous êtes ?');
 
-INSERT INTO objets (id, nom, type, indice, icon, geom)
+INSERT INTO objets (id, nom, type, indice, icon, geom, zoom_min)
 VALUES
-(8, 'reste_bijoux', 'libere', 'Vous avez retrouvé tous les bijoux volés', 'reste_bijoux.png', ST_SetSRID(ST_MakePoint(2.505, 49.039), 4326));
+(8, 'reste_bijoux', 'libere', 'Vous avez retrouvé tous les bijoux volés', 'reste_bijoux.png', ST_SetSRID(ST_MakePoint(2.505, 49.039), 4326), 14);
 
  CREATE TABLE IF NOT EXISTS scores (
     id SERIAL PRIMARY KEY,
